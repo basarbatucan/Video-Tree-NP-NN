@@ -3,12 +3,18 @@ clear
 clc
 
 % parameters
-video_set_name = 'ucsdped2.mat';
+video_set_name = 'UCSDped2_dae.mat';
 alpha = 0.25;
 
 % read raw data
 data = load(['./data/raw/',video_set_name]);
 features = fieldnames(data);
+for i=1:length(features)
+    if strcmp(features{i},'dae_latent_feature_00')
+        k=i;
+        break
+    end
+end
 
 % get number of samples
 N = length(data.xmin);
@@ -23,9 +29,9 @@ frame_n = data.frame_n';
 image_paths = data.ori_im_path';
 
 % save actual data
-x = zeros(N, 32);
-for i=1:32
-    x(:,i) = data.(features{12+i})';
+x = zeros(N, 33);
+for i=1:33
+    x(:,i) = data.(features{k-1+i})';
 end
 y = data.label';
 
