@@ -34,6 +34,8 @@ classdef Video_Tree_NPNN
         % results
         tpr_train_array_
         fpr_train_array_
+        neg_class_weight_train_array_
+        pos_class_weight_train_array_
         tpr_test_array_
         fpr_test_array_
         
@@ -199,7 +201,17 @@ classdef Video_Tree_NPNN
                 end
 
                 % probabilistic ensemble
-                yt_predict_index = dark_node_indices(find(rand<cumsum(mu_tree),1,'first'));
+                yt_predict_index = [];
+                while isempty(yt_predict_index)
+                    yt_predict_index = dark_node_indices(find(rand<cumsum(mu_tree),1,'first'));
+                    if isempty(yt_predict_index)
+                        % this section is triggered if context tree
+                        % framework fails to converge    
+                        error('Tree convergence failed...\nbeta_init: %d\ngamma: %.1f\nsigmoid_h: %1.f\nlambda: %3.f\ntree depth: %d\nsplit prob: %.1f\nnode loss constant: %.2fFourier D: %.1f\nFourier g: %.3f', ...
+                            obj.beta_init_,  obj.gamma_, obj.sigmoid_h_, obj.lambda_, ...
+                            obj.tree_depth_, obj.split_prob_, obj.node_loss_constant_);
+                    end
+                end
                 yt_predict = C(yt_predict_index);
                 
                 % save sample mu
@@ -392,6 +404,8 @@ classdef Video_Tree_NPNN
             % save the results
             obj.tpr_train_array_ = tpr_train_array;
             obj.fpr_train_array_ = fpr_train_array;
+            obj.neg_class_weight_train_array_ = neg_class_weight_train_array;
+            obj.pos_class_weight_train_array_ = pos_class_weight_train_array;
             obj.tpr_test_array_ = tpr_test_array;
             obj.fpr_test_array_ = fpr_test_array;
             
@@ -515,22 +529,29 @@ classdef Video_Tree_NPNN
         
         function plot_results(obj)
             
-            subplot(2,2,1)
+            subplot(2,3,1)
             plot(obj.tpr_train_array_, 'LineWidth', 2);grid on;
             xlabel('Number of Training Samples');
             ylabel('Train TPR');
 
-            subplot(2,2,2)
+            subplot(2,3,2)
             plot(obj.fpr_train_array_, 'LineWidth', 2);grid on;
             xlabel('Number of Training Samples');
             ylabel('Train FPR');
 
-            subplot(2,2,3)
+            subplot(2,3,3)
+            plot(obj.neg_class_weight_train_array_, 'LineWidth', 2);grid on;hold on;
+            plot(obj.pos_class_weight_train_array_, 'LineWidth', 2);
+            legend({'Negative class weight', 'Positive class weight'});
+            xlabel('Number of Training Samples');
+            ylabel('Train FPR');
+            
+            subplot(2,3,4)
             plot(obj.tpr_test_array_, 'LineWidth', 2);grid on;
             xlabel('Number of Tests');
             ylabel('Test TPR');
 
-            subplot(2,2,4)
+            subplot(2,3,5)
             plot(obj.fpr_test_array_, 'LineWidth', 2);grid on;
             xlabel('Number of Tests');
             ylabel('Test FPR');

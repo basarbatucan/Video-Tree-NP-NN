@@ -1,1 +1,12 @@
+!data/
 data/*
+!data/processed/
+!data/raw/
+data/processed/*
+!data/processed/UCSDped2_dae.mat
+!data/processed/meta_UCSDped2_dae.mat
+data/raw/*
+!data/raw/UCSDped2_dae.mat
+
+!output/
+output/*
