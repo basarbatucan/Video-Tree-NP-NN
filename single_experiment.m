@@ -5,8 +5,6 @@ function model = single_experiment(tfpr, data_name, test_repeat, optimized_param
     input_data_dir = ['./data/processed/',video_set_name];
     input_meta_data_dir = ['./data/processed/meta_',video_set_name];
 
-    val_size = 0.15;
-    test_size = 0.15;
     augmentation_size = 150e3;
     cross_val_MC = 8;
     %x and y scales
@@ -18,33 +16,47 @@ function model = single_experiment(tfpr, data_name, test_repeat, optimized_param
 
     % Define model hyper-parameter space
     hyperparams.eta_init = 0.01;
-    hyperparams.beta_init = 1e2;
+    hyperparams.beta_init = [5e2];
     hyperparams.gamma = 1;
-    hyperparams.sigmoid_h = -1;
+    hyperparams.sigmoid_h = -4;
     hyperparams.lambda = 0;
-    hyperparams.tree_depth = [4, 5, 6, 7];
+    hyperparams.tree_depth = [7];
     hyperparams.split_prob = 0.5;
-    hyperparams.node_loss_constant = 1e-1;
-    hyperparams.D = [50, 65, 80];
-    hyperparams.g = [1e-3, 1e-2];
+    hyperparams.node_loss_constant = [1];
+    hyperparams.D = [66];
+    hyperparams.g = [1e-3];
 
     % generate hyper-parameter space 
     hyperparam_space = utility_functions.generate_hyperparameter_space_Video_Tree_NPNN(hyperparams);
     hyperparam_number = length(hyperparam_space);
     cross_val_scores = zeros(cross_val_MC, hyperparam_number);
-
+    
     % Read Data
     data = load(input_data_dir);
     meta_data = load(input_meta_data_dir);
+    
+    % update train test validation for NP formulation
+    figure;
+    subplot(2,1,1);
+    plot(data.y,'k');
+    ylabel('anomaly label');
+    xlabel('indices for yolo objects');
+    grid on;
+    subplot(2,1,2);
+    new_train_valid_test = utility_functions.update_train_valid_test(meta_data.train_valid_test);
+    
     [X_train, X_val, X_test, ...
      frames_train, frames_val, frames_test, ...
      image_paths_train, image_paths_val, image_paths_test, ...
      coords_train, coords_val, coords_test, ...
-     y_train, y_val, y_test] = utility_functions.train_val_test_split(data.x, data.y, meta_data.frame_n, meta_data.image_paths, meta_data.object_coords, val_size, test_size);
+     y_train, y_val, y_test] = utility_functions.train_val_test_split(data.x, data.y, new_train_valid_test, meta_data.frame_n, meta_data.image_paths, meta_data.object_coords);
     n_features = size(X_train, 2);
 
+    close all
+    
     % cross validation
     if isempty(optimized_params)
+        
         % cross validation
         if hyperparam_number>1
 
@@ -68,8 +80,11 @@ function model = single_experiment(tfpr, data_name, test_repeat, optimized_param
             end
 
             % compare cross validations
+            fprintf('Hyperparameter space size: %d\n', hyperparam_number);
             for i=1:length(hyperparam_space)
+                
                 tuning_tstart = tic;
+                
                 parfor j=1:cross_val_MC
 
                     eta_init = hyperparam_space{i}.eta_init;
@@ -99,8 +114,10 @@ function model = single_experiment(tfpr, data_name, test_repeat, optimized_param
                     cross_val_scores(j,i) = NP_score;
 
                 end
+                
                 tuning_tend = toc(tuning_tstart);
                 fprintf('Time elapsed for testing hyperparameter set %d: %.3f\n', i, tuning_tend);
+                
             end
 
             % make decision based on mean of the NP scores
@@ -175,7 +192,7 @@ function model = single_experiment(tfpr, data_name, test_repeat, optimized_param
         model = model.train(X_train, coords_train, y_train, X_test, coords_test, y_test, test_repeat);
 
         % plot the results
-        %model.plot_results();
+        model.plot_results();
         
     end
     

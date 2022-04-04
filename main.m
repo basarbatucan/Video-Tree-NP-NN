@@ -4,13 +4,13 @@ clc
 
 % only look at first 5 for other analysis
 tfprs = [5e-3, 1e-2, 5e-2, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
-tfpr_index = 12;
+tfpr_index = 4;
 MC = 16;
 
-%data_name = 'UCSDped1'; % missing
-%data_name = 'UCSDped2';
-%data_name = 'ShangaiTech'; % missing
+data_name = 'UCSDped2';
 %data_name = 'SUrveillance';
+%data_name = 'UCSDped1';
+%data_name = 'ShangaiTech';
 
 out_data = sprintf('./output/%s/res_%03d.mat', data_name, tfpr_index);
 out_hyper = sprintf('./output/%s/res_hyper_%03d.mat', data_name, tfpr_index);
@@ -43,11 +43,19 @@ if ~isfile(out_hyper)
     save(out_hyper, 'eta_init', 'beta_init', 'gamma', 'sigmoid_h', 'lambda', 'tree_depth', 'split_prob', 'node_loss_constant', 'D', 'g');
 end
 
-
 % hyperparameter is available
 hyper_params = load(out_hyper);
 % run the model with hyperparams
 test_repeat = 100;
+
+% test tun with the selected parameters
+% comment this part in order to ignore one additional
+disp('Starting single run...');
+t_start = tic;
+model = single_experiment(tfpr, data_name, test_repeat, hyper_params);
+t_end = toc(t_start);
+disp(['test run completed in ',num2str(t_end)]);
+pause;
 
 % run MCs
 test_tstart = tic;

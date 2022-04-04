@@ -32,12 +32,13 @@ classdef Video_Tree_NPNN
         g_
         
         % results
+        mu_train_array_
         tpr_train_array_
         fpr_train_array_
-        neg_class_weight_train_array_
-        pos_class_weight_train_array_
         tpr_test_array_
         fpr_test_array_
+        neg_class_weight_train_array_
+        pos_class_weight_train_array_
         
     end
     
@@ -402,12 +403,13 @@ classdef Video_Tree_NPNN
             obj.alpha_ = alpha;
             
             % save the results
+            obj.mu_train_array_ = sample_mu;
             obj.tpr_train_array_ = tpr_train_array;
             obj.fpr_train_array_ = fpr_train_array;
-            obj.neg_class_weight_train_array_ = neg_class_weight_train_array;
-            obj.pos_class_weight_train_array_ = pos_class_weight_train_array;
             obj.tpr_test_array_ = tpr_test_array;
             obj.fpr_test_array_ = fpr_test_array;
+            obj.neg_class_weight_train_array_ = neg_class_weight_train_array;
+            obj.pos_class_weight_train_array_ = pos_class_weight_train_array;
             
         end
         
@@ -542,9 +544,9 @@ classdef Video_Tree_NPNN
             subplot(2,3,3)
             plot(obj.neg_class_weight_train_array_, 'LineWidth', 2);grid on;hold on;
             plot(obj.pos_class_weight_train_array_, 'LineWidth', 2);
-            legend({'Negative class weight', 'Positive class weight'});
             xlabel('Number of Training Samples');
-            ylabel('Train FPR');
+            ylabel('Class weights');
+            legend({'Neg class weight', 'Pos class weight'});
             
             subplot(2,3,4)
             plot(obj.tpr_test_array_, 'LineWidth', 2);grid on;
@@ -555,6 +557,14 @@ classdef Video_Tree_NPNN
             plot(obj.fpr_test_array_, 'LineWidth', 2);grid on;
             xlabel('Number of Tests');
             ylabel('Test FPR');
+            
+            figure()
+            plot(obj.mu_train_array_, '*');
+            legends = cell(1, obj.tree_depth_+1);
+            for i=1:obj.tree_depth_+1
+                legends{i} = sprintf('Depth %d',i-1);
+            end
+            legend(legends);
             
         end
         
