@@ -216,7 +216,7 @@ classdef Video_Tree_NPNN
                 yt_predict = C(yt_predict_index);
                 
                 % save sample mu
-                sample_mu(i, :) = mu_tree;
+                sample_mu(i, :) = mu_tree';
                 
                 % save tp and fp
                 if yt == 1
@@ -241,6 +241,8 @@ classdef Video_Tree_NPNN
                     y_predict_tmp = zeros(n_samples_test,1);
                     sigma_tree__ = zeros(tree_depth+1,1);
                     mu_tree__ = zeros(tree_depth+1,1);
+                    xt_projected_pre__ = zeros(tree_depth+1, D);
+                    xt_projected__ = zeros(tree_depth+1, 2*D);
                     y_discriminant__ = zeros(tree_depth+1,1);
                     C__ = zeros(tree_depth+1,1);
                     for j=1:n_samples_test
@@ -266,11 +268,11 @@ classdef Video_Tree_NPNN
                             mu_tree__(k) = sigma_tree__(k)*E(dark_node_index)/P(1);
                             
                             % make the projection
-                            xt_projected_pre(dark_node_index, :) = xt_tmp*alpha((dark_node_index-1)*n_features+1:dark_node_index*n_features,:);
-                            xt_projected(dark_node_index, :) = (1/sqrt(D))*[cos(xt_projected_pre(dark_node_index, :)), sin(xt_projected_pre(dark_node_index, :))];
+                            xt_projected_pre__(dark_node_index, :) = xt_tmp*alpha((dark_node_index-1)*n_features+1:dark_node_index*n_features,:);
+                            xt_projected__(dark_node_index, :) = (1/sqrt(D))*[cos(xt_projected_pre__(dark_node_index, :)), sin(xt_projected_pre__(dark_node_index, :))];
 
                             % calculate discriminant in each node
-                            y_discriminant__single = xt_projected(dark_node_index, :)*w(:,dark_node_index)+b(dark_node_index);
+                            y_discriminant__single = xt_projected__(dark_node_index, :)*w(:,dark_node_index)+b(dark_node_index);
                             y_discriminant__(dark_node_index) = y_discriminant__single;
                             C__(dark_node_index) = sign(y_discriminant__single);
                             
