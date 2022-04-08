@@ -6,6 +6,7 @@ function model = single_experiment(tfpr, data_name, test_repeat, optimized_param
     input_meta_data_dir = ['./data/processed/meta_',video_set_name];
 
     augmentation_size = 150e3;
+    %augmentation_size = 1e6;
     cross_val_MC = 8;
     %x and y scales
     % read 1 image from test data to determine the size of the feature
@@ -15,15 +16,15 @@ function model = single_experiment(tfpr, data_name, test_repeat, optimized_param
     [max_y, max_x, ~] = size(tmp_im);
 
     % Define model hyper-parameter space
-    hyperparams.eta_init = 0.005;
-    hyperparams.beta_init = [20];
+    hyperparams.eta_init = 0.01;
+    hyperparams.beta_init = [500];
     hyperparams.gamma = 1;
     hyperparams.sigmoid_h = -1;
     hyperparams.lambda = 0;
     hyperparams.tree_depth = [8];
     hyperparams.split_prob = 0.5;
-    hyperparams.node_loss_constant = [1];
-    hyperparams.D = [50];
+    hyperparams.node_loss_constant = [2];
+    hyperparams.D = [60];
     hyperparams.g = 5./(2*hyperparams.D);
     %hyperparams.g = 1;
     
